@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DataAccessLayer": {
+      "commandName": "Project"
+    },
+    "Container (Dockerfile)": {
+      "commandName": "Docker"
+    }
+  }
+}

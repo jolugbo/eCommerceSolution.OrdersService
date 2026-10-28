@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BusinessLogicLayer.DTO
+namespace eCommerce.OrdersService.BusinessLogicLayer.DTO;
+
+public record OrderUpdateRequest(Guid OrderID, Guid UserID, DateTime OrderDate, List<OrderItemAddRequest> OrderItems)
 {
-    internal class OrderUpdateRequest
+    public OrderUpdateRequest() : this(default, default, default, default)
     {
+
     }
 }

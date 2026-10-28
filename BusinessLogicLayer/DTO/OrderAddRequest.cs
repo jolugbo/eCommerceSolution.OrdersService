@@ -1,10 +1,13 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BusinessLogicLayer.DTO
+namespace eCommerce.OrdersService.BusinessLogicLayer.DTO;
+
+public record OrderAddRequest(Guid UserID, DateTime OrderDate, List<OrderItemAddRequest> OrderItems)
 {
-    internal class OrderAddRequest
-    {
+    public OrderAddRequest() : this(default,default,default) { 
+    
     }
 }

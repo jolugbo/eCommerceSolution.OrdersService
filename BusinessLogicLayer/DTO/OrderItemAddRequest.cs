@@ -2,9 +2,12 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace BusinessLogicLayer.DTO
+namespace eCommerce.OrdersService.BusinessLogicLayer.DTO;   
+
+public record OrderItemAddRequest(Guid ProductID, decimal UnitPrice, int Quantity)
 {
-    internal class OrderItemAddRequest
+    public OrderItemAddRequest() : this(default, default, default)
     {
+
     }
 }

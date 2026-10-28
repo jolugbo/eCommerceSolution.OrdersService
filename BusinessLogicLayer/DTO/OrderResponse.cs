@@ -1,10 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using System.Text;
 
-namespace BusinessLogicLayer.DTO
+namespace eCommerce.OrdersService.BusinessLogicLayer.DTO;
+
+public record OrderResponse(Guid OrderID, Guid UserID, DecimalConstantAttribute TotalBill,
+    DateTime OrderDate, List<OrderItemResponse> OrderItems)
 {
-    internal class OrderResponse
+    public OrderResponse() : this(default, default, default, default, default)
     {
+
     }
 }

@@ -11,10 +11,10 @@ public class Order
     [BsonRepresentation(MongoDB.Bson.BsonType.String)]
     public Guid _id { get; set; }
     [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-    public Guid OrderId { get; set; }
+    public Guid OrderID { get; set; }
 
     [BsonRepresentation(MongoDB.Bson.BsonType.String)]
-    public Guid UserId { get; set; }
+    public Guid UserID { get; set; }
     [BsonRepresentation(MongoDB.Bson.BsonType.String)]
     public DateTime OrderDate { get; set; }
     [BsonRepresentation(MongoDB.Bson.BsonType.Double)]

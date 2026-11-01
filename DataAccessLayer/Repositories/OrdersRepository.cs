@@ -30,14 +30,19 @@ public class OrdersRepository : IOrdersRepository
 
     public async Task<Order?> AddOrder(Order order)
     {
-        order.OrderId = Guid.NewGuid();
-         await _ordersCollection.InsertOneAsync(order);
+        order.OrderID = Guid.NewGuid();
+        order._id = order.OrderID;
+        foreach (var item in order.OrderItems)
+        {
+            item._id = Guid.NewGuid();
+        }
+        await _ordersCollection.InsertOneAsync(order);
         return order;
     }
 
     public async Task<Order?> UpdateOrder(Order order)
     {
-        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(x => x.OrderId, order.OrderId);
+        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(x => x.OrderID, order.OrderID);
         var existingOrder = (await _ordersCollection.FindAsync(filter)).FirstOrDefault();
         if (existingOrder == null)
         {
@@ -49,7 +54,7 @@ public class OrdersRepository : IOrdersRepository
 
     public async Task<bool> DeleteOrder(Guid orderId)
     {
-        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(x => x.OrderId, orderId);
+        FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(x => x.OrderID, orderId);
         var existingOrder = (await _ordersCollection.FindAsync(filter)).FirstOrDefault(); 
         if(existingOrder == null)
         {

@@ -2,15 +2,15 @@
 using eCommerce.OrdersService.BusinessLogicLayer.DTO;
 using eCommerce.OrdersService.DataAccessLayer.Entities;
 
-namespace eCommerce.OrdersService.BusinessLogicLayer.Mapper;
+namespace eCommerce.OrdersService.BusinessLogicLayer.Mappers;
 
-public class OrderToOrderResponseMapper: Profile
+public class OrderToOrderResponseMappingProfile : Profile
 {
-    public OrderToOrderResponseMapper()
+    public OrderToOrderResponseMappingProfile()
     {
         CreateMap<Order, OrderResponse>()
-            .ForMember(dest => dest.OrderID, opt => opt.MapFrom(src => src.OrderId))
-            .ForMember(dest => dest.UserID, opt => opt.MapFrom(src => src.UserId))
+            .ForMember(dest => dest.OrderID, opt => opt.MapFrom(src => src.OrderID))
+            .ForMember(dest => dest.UserID, opt => opt.MapFrom(src => src.UserID))
             .ForMember(dest => dest.OrderDate, opt => opt.MapFrom(src => src.OrderDate))
             .ForMember(dest => dest.OrderItems, opt => opt.MapFrom(src => src.OrderItems))
             .ForMember(dest => dest.TotalBill, opt => opt.MapFrom(src => src.TotalBill));

@@ -1,26 +1,120 @@
+using eCommerce.OrdersService.BusinessLogicLayer.DTO;
+using eCommerce.OrdersService.BusinessLogicLayer.ServiceContracts;
+using eCommerce.OrdersService.DataAccessLayer.Entities;
+using Microsoft.AspNetCore.Identity.Data;
 using Microsoft.AspNetCore.Mvc;
+using MongoDB.Driver;
 
 namespace eCommerceSolution.OrdersService.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("api/[controller]")]
     public class OrdersController : ControllerBase
     {
-        private static readonly string[] Summaries =
-        [
-            "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-        ];
+        private readonly IOrdersService _ordersService;
 
-        //[HttpGet(Name = "GetWeatherForecast")]
-        //public IEnumerable<WeatherForecast> Get()
-        //{
-        //    //return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-        //    //{
-        //    //    Date = DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-        //    //    TemperatureC = Random.Shared.Next(-20, 55),
-        //    //    Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-        //    //})
-        //    //.ToArray();
-        //}
+        public OrdersController(IOrdersService ordersService)
+        {
+            _ordersService = ordersService;
+        }
+
+        [HttpGet]//GET api/Orders
+        public async Task<IEnumerable<OrderResponse?>> Get()
+        {
+            List<OrderResponse?> response = await _ordersService.GetOrders();
+            
+            return response;
+        }
+
+
+        [HttpGet("search/orderid/{orderID}")]//GET api/Orders/search/orderid/{orderID}
+        public async Task<OrderResponse?> GetOrderByOrderID(Guid orderID)
+        {
+            FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(temp => temp.OrderID, orderID);
+            OrderResponse response = await _ordersService.GetOrderByCondition(filter);
+
+            return response;
+        }
+
+        [HttpGet("search/productid/{productID}")]//GET api/Orders/search/productid/{productID}
+        public async Task<IEnumerable<OrderResponse?>> GetOrderByProductID(Guid productID)
+        {
+            FilterDefinition<Order> filter =
+                Builders<Order>.Filter.ElemMatch(temp => temp.OrderItems,
+                Builders<OrderItem>.Filter.Eq(tempProduct => tempProduct.ProductID, productID));
+            List<OrderResponse?> response = await _ordersService.GetOrdersByCondition(filter);
+
+            return response;
+        }
+
+        [HttpGet("search/orderDate/{orderDate}")]//GET api/Orders/search/orderDate/{orderDate}
+        public async Task<IEnumerable<OrderResponse?>> GetOrderByOrderDate(DateTime orderDate)
+        {
+            FilterDefinition<Order> filter =
+                Builders<Order>.Filter.Eq(temp => temp.OrderDate.ToString("yyyy-MM-dd"), orderDate.ToString("yyyy-MM-dd"));
+            List<OrderResponse?> response = await _ordersService.GetOrdersByCondition(filter);
+
+            return response;
+        }
+
+        [HttpGet("search/userID/{userID}")]//GET api/Orders/search/userID/{userID}
+        public async Task<IEnumerable<OrderResponse?>> GetOrderByUserID(Guid userID)
+        {
+            FilterDefinition<Order> filter =
+                Builders<Order>.Filter.Eq(temp => temp.UserID, userID);
+            List<OrderResponse?> response = await _ordersService.GetOrdersByCondition(filter);
+
+            return response;
+        }
+
+
+        [HttpPost]//POST api/orders
+        public async Task<IActionResult> orders(OrderAddRequest orderRequest)
+        {
+            if (orderRequest == null)
+            {
+                return BadRequest("Invalid order data");
+            }
+            OrderResponse? response = await _ordersService.AddOrder(orderRequest);
+            if (response == null)
+            {
+                return Problem("Order creation failed");
+            }
+            return Created($"api/Orders/search/orderid/{response?.OrderID}", response);
+        }
+
+        [HttpPut("{orderID}")]//PUT api/orders/{orderID}
+        public async Task<IActionResult> UpdateOrder(Guid orderID, OrderUpdateRequest orderUpdateRequest)
+        {
+            if (orderUpdateRequest == null)
+            {
+                return BadRequest("Invalid order data");
+            }
+            if (orderID != orderUpdateRequest.OrderID)
+            {
+                return BadRequest("Order ID mismatch");
+            }
+            OrderResponse? response = await _ordersService.UpdateOrder(orderUpdateRequest);
+            if (response == null)
+            {
+                return Problem("Order creation failed");
+            }
+            return Created($"api/Orders/search/orderid/{response?.OrderID}", response);
+        }
+
+        [HttpDelete("{orderID}")]//DELETE api/orders/{orderID}
+        public async Task<IActionResult> DeleteOrder(Guid orderID)
+        {
+            if (orderID == Guid.Empty)
+            {
+                return BadRequest("Invalid order ID");
+            }
+            bool isDeleted = await _ordersService.DeleteOrder(orderID);
+            if (!isDeleted)
+            {
+                return NotFound("Order not found");
+            }
+            return Ok("Order deleted successfully");
+        }
     }
 }

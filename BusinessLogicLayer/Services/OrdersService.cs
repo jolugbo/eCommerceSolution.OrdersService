@@ -64,7 +64,7 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
 
         public async Task<bool> DeleteOrder(Guid orderID)
         {
-            FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(temp => temp.OrderId, orderID);
+            FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(temp => temp.OrderID, orderID);
             Order? existingOrder = await _ordersRepository.GetOrderByCondition(filter);
             if (existingOrder == null) return false;
            bool isDeleted = await _ordersRepository.DeleteOrder(orderID);

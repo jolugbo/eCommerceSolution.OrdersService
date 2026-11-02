@@ -17,8 +17,8 @@ namespace eCommerceSolution.OrdersService.Controllers
         {
             _ordersService = ordersService;
         }
-
-        [HttpGet]//GET api/Orders
+        //GET api/Orders
+        [HttpGet]
         public async Task<IEnumerable<OrderResponse?>> Get()
         {
             List<OrderResponse?> response = await _ordersService.GetOrders();
@@ -26,8 +26,8 @@ namespace eCommerceSolution.OrdersService.Controllers
             return response;
         }
 
-
-        [HttpGet("search/orderid/{orderID}")]//GET api/Orders/search/orderid/{orderID}
+        //GET api/Orders/search/orderid/{orderID}
+        [HttpGet("search/orderid/{orderID}")]
         public async Task<OrderResponse?> GetOrderByOrderID(Guid orderID)
         {
             FilterDefinition<Order> filter = Builders<Order>.Filter.Eq(temp => temp.OrderID, orderID);
@@ -35,8 +35,9 @@ namespace eCommerceSolution.OrdersService.Controllers
 
             return response;
         }
-
-        [HttpGet("search/productid/{productID}")]//GET api/Orders/search/productid/{productID}
+        
+        //GET api/Orders/search/productid/{productID}
+        [HttpGet("search/productid/{productID}")]
         public async Task<IEnumerable<OrderResponse?>> GetOrderByProductID(Guid productID)
         {
             FilterDefinition<Order> filter =
@@ -47,7 +48,8 @@ namespace eCommerceSolution.OrdersService.Controllers
             return response;
         }
 
-        [HttpGet("search/orderDate/{orderDate}")]//GET api/Orders/search/orderDate/{orderDate}
+        //GET api/Orders/search/orderDate/{orderDate}
+        [HttpGet("search/orderDate/{orderDate}")]
         public async Task<IEnumerable<OrderResponse?>> GetOrderByOrderDate(DateTime orderDate)
         {
             FilterDefinition<Order> filter =
@@ -57,7 +59,8 @@ namespace eCommerceSolution.OrdersService.Controllers
             return response;
         }
 
-        [HttpGet("search/userID/{userID}")]//GET api/Orders/search/userID/{userID}
+        //GET api/Orders/search/userID/{userID}
+        [HttpGet("search/userID/{userID}")]
         public async Task<IEnumerable<OrderResponse?>> GetOrderByUserID(Guid userID)
         {
             FilterDefinition<Order> filter =
@@ -67,8 +70,8 @@ namespace eCommerceSolution.OrdersService.Controllers
             return response;
         }
 
-
-        [HttpPost]//POST api/orders
+        //POST api/orders
+        [HttpPost]
         public async Task<IActionResult> orders(OrderAddRequest orderRequest)
         {
             if (orderRequest == null)
@@ -83,7 +86,8 @@ namespace eCommerceSolution.OrdersService.Controllers
             return Created($"api/Orders/search/orderid/{response?.OrderID}", response);
         }
 
-        [HttpPut("{orderID}")]//PUT api/orders/{orderID}
+        //PUT api/orders/{orderID}
+        [HttpPut("{orderID}")]
         public async Task<IActionResult> UpdateOrder(Guid orderID, OrderUpdateRequest orderUpdateRequest)
         {
             if (orderUpdateRequest == null)
@@ -102,7 +106,8 @@ namespace eCommerceSolution.OrdersService.Controllers
             return Created($"api/Orders/search/orderid/{response?.OrderID}", response);
         }
 
-        [HttpDelete("{orderID}")]//DELETE api/orders/{orderID}
+        //DELETE api/orders/{orderID}
+        [HttpDelete("{orderID}")]
         public async Task<IActionResult> DeleteOrder(Guid orderID)
         {
             if (orderID == Guid.Empty)

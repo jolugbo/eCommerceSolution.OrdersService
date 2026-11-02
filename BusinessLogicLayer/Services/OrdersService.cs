@@ -82,15 +82,15 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
         {
             IEnumerable<Order>? order = await _ordersRepository.GetOrders();
             if (order == null) return null;
-            return _mapper.Map<List<OrderResponse>>(order).ToList();
+            return _mapper.Map<List<OrderResponse?>>(order).ToList();
 
         }
 
-        public async Task<List<OrderResponse>?> GetOrdersByCondition(FilterDefinition<Order> filter)
+        public async Task<List<OrderResponse?>> GetOrdersByCondition(FilterDefinition<Order> filter)
         {
             IEnumerable<Order>? order = await _ordersRepository.GetOrdersByCondition(filter);
             if (order == null) return null;
-            return _mapper.Map<List<OrderResponse>>(order).ToList();
+            return _mapper.Map<List<OrderResponse?>>(order).ToList();
         }
 
         public async Task<OrderResponse?> UpdateOrder(OrderUpdateRequest orderUpdateRequest)

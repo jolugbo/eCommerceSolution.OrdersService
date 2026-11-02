@@ -48,6 +48,7 @@ public class OrdersRepository : IOrdersRepository
         {
             return null;
         }
+        order._id = existingOrder._id;
         ReplaceOneResult updateResult = await _ordersCollection.ReplaceOneAsync(filter,order);
         return order;
     }

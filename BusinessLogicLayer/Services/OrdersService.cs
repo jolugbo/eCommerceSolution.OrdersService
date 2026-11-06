@@ -1,4 +1,6 @@
 ﻿using AutoMapper;
+using BusinessLogicLayer.OrdersService.BusinessLogicLayer.DTO;
+using BusinessLogicLayer.OrdersService.BusinessLogicLayer.HTTPClients;
 using eCommerce.OrdersService.BusinessLogicLayer.DTO;
 using eCommerce.OrdersService.BusinessLogicLayer.ServiceContracts;
 using eCommerce.OrdersService.BusinessLogicLayer.Validator;
@@ -18,9 +20,10 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
         private readonly IValidator<OrderItemAddRequest> _orderItemAddRequestValidator;
         private readonly IValidator<OrderUpdateRequest> _orderUpdateRequestValidator;
         private readonly IValidator<OrderItemUpdateRequest> _orderItemUpdateRequestValidator;
+        private readonly UsersMicroserviceClient _usersMicroserviceClient;      
 
         public OrderService(IOrdersRepository ordersRepository, IMapper mapper, OrderAddRequestValidator orderAddRequestValidator, IValidator<OrderItemAddRequest> orderItemAddRequestValidator,
-            IValidator<OrderUpdateRequest> orderUpdateRequestValidator, IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator)
+            IValidator<OrderUpdateRequest> orderUpdateRequestValidator, IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator, UsersMicroserviceClient usersMicroserviceClient)
         {
             _ordersRepository = ordersRepository;
             _mapper = mapper;
@@ -28,6 +31,7 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
             _orderItemAddRequestValidator = orderItemAddRequestValidator;
             _orderUpdateRequestValidator = orderUpdateRequestValidator;
             _orderItemUpdateRequestValidator = orderItemUpdateRequestValidator;
+            _usersMicroserviceClient = usersMicroserviceClient;
         }
 
         public async Task<OrderResponse?> AddOrder(OrderAddRequest orderAddRequest)
@@ -51,12 +55,19 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
                     throw new ValidationException(errors);
                 }
             }
+            UserDTO user = await _usersMicroserviceClient.GetUserById(orderAddRequest.UserID);
+            if (user == null)
+            {
+                throw new Exception($"User with ID {orderAddRequest.UserID} not found.");
+            }
             var orderEntity = _mapper.Map<Order>(orderAddRequest);
+            orderEntity.UserID = user.UserId;
             foreach (var orderItem in orderEntity.OrderItems)
             {
                 orderItem.TotalPrice = orderItem.Quantity * orderItem.UnitPrice;
             }
             orderEntity.TotalBill = orderEntity.OrderItems.Sum(oi => oi.TotalPrice);
+
             var addedOrderEntity = await _ordersRepository.AddOrder(orderEntity);
             var addedOrderResponse = _mapper.Map<OrderResponse>(addedOrderEntity);
             return addedOrderResponse;
@@ -113,6 +124,11 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
                     string errors = string.Join(", ", orderItemUpdateRequestValidationResult.Errors.Select(e => e.ErrorMessage));
                     throw new ValidationException(errors);
                 }
+            }
+            UserDTO user = await _usersMicroserviceClient.GetUserById(orderUpdateRequest.UserID);
+            if (user == null)
+            {
+                throw new Exception($"User with ID {orderUpdateRequest.UserID} not found.");
             }
             var orderUpdateEntity = _mapper.Map<Order>(orderUpdateRequest);
             foreach (var orderupdateItem in orderUpdateEntity.OrderItems)

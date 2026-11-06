@@ -1,3 +1,4 @@
+using BusinessLogicLayer.OrdersService.BusinessLogicLayer.HTTPClients;
 using eCommerce.OrdersService.API.Middleware;
 //using eCommerce.OrdersService.API.APIEndPoints;
 using eCommerce.OrdersService.API.Middleware;
@@ -29,6 +30,10 @@ builder.Services.AddCors(options =>
         .AllowAnyMethod()
         .AllowAnyHeader();
     });
+});
+builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
+{
+    client.BaseAddress = new Uri($"http://{builder.Configuration["UsersMicroserviceName"]}:{builder.Configuration["UsersMicroservicePort"]}");
 });
 var app = builder.Build();
 

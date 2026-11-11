@@ -10,13 +10,16 @@ services:
       - MONGODB_HOST=mongodb-container
       - MONGODB_PORT=27017
       - MONGODB_DATABASE=OrdersDatabase
-      - UsersMicroserviceName=localhost
-      - UsersMicroservicePort=5001
+      - UsersMicroserviceName=users-microservice
+      - UsersMicroservicePort=5000
     ports:
       - "7000:8080"
     networks:
       - orders-mongodb-network
-
+      - ecommerce-network
+    depends_on:
+     - mongodb-container
+    
   mongodb-container:
     image: mongo:latest
     container_name: mongodb-container
@@ -26,7 +29,77 @@ services:
       - ../mongodb-init:/docker-entrypoint-initdb.d
     networks:
       - orders-mongodb-network
-
+  
+  products-microservice:
+   image: products-microservice:latest
+   environment:
+    - ASPNETCORE_HTTP_PORTS=8080
+    - ASPNETCORE_ENVIRONMENT=Development
+    - MYSQL_HOST=mysql-container  
+    - MYSQL_PASSWORD=admin
+    - MYSQL_PORT=3306
+    - MYSQL_USER=api
+    - MYSQL_DATABASE=ecommerceproductsdatabase
+   ports:
+    - "6000:8080"
+   networks:
+    - products-mysql-network
+    - ecommerce-network
+   depends_on:
+    - mysql-container
+ 
+  mysql-container:
+   image: mysql:latest
+   environment:
+    MYSQL_ROOT_PASSWORD: admin
+   ports:
+    - "3307:3306"
+   volumes:
+    - ../mysql-init:/docker-entrypoint-initdb.d  
+   networks:
+    - products-mysql-network
+  
+  
+  users-microservice:
+   image: jolugbo/ecommerce-users-microservice:v1.0
+   environment:
+    - ASPNETCORE_HTTP_PORTS=8080
+    - ASPNETCORE_HTTP_ENVIRONMENT=Development
+    - POSTGRES_HOST=postgres-container  
+    - POSTGRES_PASSWORD=admin
+    - POSTGRES_DATABASE=eCommerceUsers
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=@ssessGranted
+    - POSTGRES_PORT=5432
+   ports:
+    - 5000:8080
+   networks:
+    - users-postgres-network 
+    - ecommerce-network
+   depends_on:
+    - postgres-container
+     
+  postgres-container:
+   image: postgres:latest
+   environment:
+    - POSTGRES_USER=postgres
+    - POSTGRES_PASSWORD=admin
+    - POSTGRES_DB=eCommerceUsers
+   ports:
+    - 5433:5432
+   volumes:
+    - ./postgres-init:/docker-entrypoint-initdb.d
+   networks:
+    - users-postgres-network
+  
+ 
+     
 networks:
   orders-mongodb-network:
+    driver: bridge
+  products-mysql-network:
+    driver: bridge
+  users-postgres-network:
+    driver: bridge
+  ecommerce-network:
     driver: bridge

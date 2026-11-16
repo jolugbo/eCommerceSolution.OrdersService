@@ -12,6 +12,8 @@ services:
       - MONGODB_DATABASE=OrdersDatabase
       - UsersMicroserviceName=users-microservice
       - UsersMicroservicePort=8080
+      - ProductsMicroserviceName=products-microservice
+      - ProductsMicroservicePort=8080
     ports:
       - "7000:8080"
     networks:
@@ -38,7 +40,7 @@ services:
     - MYSQL_HOST=mysql-container  
     - MYSQL_PASSWORD=admin
     - MYSQL_PORT=3306
-    - MYSQL_USER=api
+    - MYSQL_USER=root
     - MYSQL_DATABASE=ecommerceproductsdatabase
    ports:
     - "6000:8080"
@@ -61,7 +63,7 @@ services:
   
   
   users-microservice:
-   image: jolugbo/ecommerce-users-microservice:latest 
+   image: jolugbo/ecommerce-users-microservice:v1.1 
    environment:
     - ASPNETCORE_HTTP_PORTS=8080
     - ASPNETCORE_HTTP_ENVIRONMENT=Development
@@ -69,7 +71,6 @@ services:
     - POSTGRES_PASSWORD=admin
     - POSTGRES_DATABASE=eCommerceUsers
     - POSTGRES_USER=postgres
-    - POSTGRES_PASSWORD=@ssessGranted
     - POSTGRES_PORT=5432
    ports:
     - "5000:8080"
@@ -88,7 +89,7 @@ services:
    ports:
     - "5433:5432"
    volumes:
-    - ./postgres-init:/docker-entrypoint-initdb.d
+    - ../postgres-init:/docker-entrypoint-initdb.d
    networks:
     - users-postgres-network
   

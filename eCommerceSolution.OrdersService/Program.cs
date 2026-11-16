@@ -31,9 +31,16 @@ builder.Services.AddCors(options =>
         .AllowAnyHeader();
     });
 });
+var usersMicroserviceName = builder.Configuration["UsersMicroserviceName"];
+var usersMicroservicePort = builder.Configuration["UsersMicroservicePort"];
 builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
 {
-    client.BaseAddress = new Uri($"http://{builder.Configuration["UsersMicroserviceName"]}:{builder.Configuration["UsersMicroservicePort"]}");
+    client.BaseAddress = new Uri($"http://{usersMicroserviceName}:{usersMicroservicePort}");
+});
+var productsMicroserviceName = builder.Configuration["ProductsMicroserviceName"];
+var productsMicroservicePort = builder.Configuration["ProductsMicroservicePort"];
+builder.Services.AddHttpClient<ProductsMicroserviceClient>(client => {
+    client.BaseAddress = new Uri($"http://{productsMicroserviceName}:{productsMicroservicePort}");
 });
 var app = builder.Build();
 

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using BusinessLogicLayer.DTO;
 using BusinessLogicLayer.OrdersService.BusinessLogicLayer.DTO;
 using BusinessLogicLayer.OrdersService.BusinessLogicLayer.HTTPClients;
 using eCommerce.OrdersService.BusinessLogicLayer.DTO;
@@ -20,10 +21,11 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
         private readonly IValidator<OrderItemAddRequest> _orderItemAddRequestValidator;
         private readonly IValidator<OrderUpdateRequest> _orderUpdateRequestValidator;
         private readonly IValidator<OrderItemUpdateRequest> _orderItemUpdateRequestValidator;
-        private readonly UsersMicroserviceClient _usersMicroserviceClient;      
+        private readonly UsersMicroserviceClient _usersMicroserviceClient;
+        private readonly ProductsMicroserviceClient _productsMicroserviceClient;
 
         public OrderService(IOrdersRepository ordersRepository, IMapper mapper, OrderAddRequestValidator orderAddRequestValidator, IValidator<OrderItemAddRequest> orderItemAddRequestValidator,
-            IValidator<OrderUpdateRequest> orderUpdateRequestValidator, IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator, UsersMicroserviceClient usersMicroserviceClient)
+            IValidator<OrderUpdateRequest> orderUpdateRequestValidator, IValidator<OrderItemUpdateRequest> orderItemUpdateRequestValidator, UsersMicroserviceClient usersMicroserviceClient, ProductsMicroserviceClient productsMicroserviceClient)
         {
             _ordersRepository = ordersRepository;
             _mapper = mapper;
@@ -32,6 +34,7 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
             _orderUpdateRequestValidator = orderUpdateRequestValidator;
             _orderItemUpdateRequestValidator = orderItemUpdateRequestValidator;
             _usersMicroserviceClient = usersMicroserviceClient;
+            _productsMicroserviceClient = productsMicroserviceClient;
         }
 
         public async Task<OrderResponse?> AddOrder(OrderAddRequest orderAddRequest)
@@ -59,6 +62,14 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
             if (user == null)
             {
                 throw new Exception($"User with ID {orderAddRequest.UserID} not found.");
+            }
+            foreach (OrderItemAddRequest orderItemAddRequest in orderAddRequest.OrderItems)
+            {
+                ProductDTO product = await _productsMicroserviceClient.GetProductById(orderItemAddRequest.ProductID);
+                if (product == null)
+                {
+                    throw new Exception($"Product with ID {orderItemAddRequest.ProductID} not found.");
+                }
             }
             var orderEntity = _mapper.Map<Order>(orderAddRequest);
             orderEntity.UserID = user.UserId;
@@ -129,6 +140,15 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
             if (user == null)
             {
                 throw new Exception($"User with ID {orderUpdateRequest.UserID} not found.");
+            }
+
+            foreach (OrderItemUpdateRequest orderItemUpdateRequest in orderUpdateRequest.OrderItems)
+            {
+                ProductDTO product = await _productsMicroserviceClient.GetProductById(orderItemUpdateRequest.ProductID);
+                if (product == null)
+                {
+                    throw new Exception($"Product with ID {orderItemUpdateRequest.ProductID} not found.");
+                }
             }
             var orderUpdateEntity = _mapper.Map<Order>(orderUpdateRequest);
             foreach (var orderupdateItem in orderUpdateEntity.OrderItems)

@@ -89,6 +89,7 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
                     _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItem);
 
                 }
+                _mapper.Map<UserDTO, OrderResponse>(user, addedOrderResponse);
             }
             return addedOrderResponse;
         }
@@ -108,6 +109,7 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
             OrderResponse? orderResponse = _mapper.Map<OrderResponse?>(orders);
             if (orderResponse!= null)
             {
+                UserDTO user = await _usersMicroserviceClient.GetUserById(orderResponse.UserID);
                 foreach (OrderItemResponse orderItem in orderResponse.OrderItems)
                 {
                     ProductDTO productDTO = await _productsMicroserviceClient.GetProductById(orderItem.ProductID);
@@ -115,6 +117,7 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
                     _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItem);
 
                 }
+                _mapper.Map<UserDTO, OrderResponse>(user, orderResponse);
             }
            
             return orderResponse;
@@ -128,13 +131,14 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
             foreach (OrderResponse orderResponse in orderResponses)
             {
                 if (orderResponse == null) {  continue; }
+                UserDTO user = await _usersMicroserviceClient.GetUserById(orderResponse.UserID);
                 foreach (OrderItemResponse orderItem in orderResponse.OrderItems)
                 {
                     ProductDTO productDTO = await _productsMicroserviceClient.GetProductById(orderItem.ProductID);
                     if (productDTO == null) {  continue; }
                     _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItem);
-                    
                 }
+                _mapper.Map<UserDTO, OrderResponse>(user, orderResponse);
             }
             return orderResponses.ToList();
 
@@ -147,13 +151,14 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
             foreach (OrderResponse orderResponse in orderResponses)
             {
                 if (orderResponse == null) { continue; }
+                UserDTO user = await _usersMicroserviceClient.GetUserById(orderResponse.UserID);
                 foreach (OrderItemResponse orderItem in orderResponse.OrderItems)
                 {
                     ProductDTO productDTO = await _productsMicroserviceClient.GetProductById(orderItem.ProductID);
                     if (productDTO == null) { continue; }
                     _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItem);
-
                 }
+                _mapper.Map<UserDTO, OrderResponse>(user, orderResponse);
             }
             return orderResponses.ToList();
         }
@@ -209,6 +214,7 @@ namespace eCommerce.OrdersService.usinessLogicLayer.Services
                     _mapper.Map<ProductDTO, OrderItemResponse>(productDTO, orderItem);
 
                 }
+                _mapper.Map<UserDTO, OrderResponse>(user, addedUpdateOrderResponse);
             }
 
             return addedUpdateOrderResponse;

@@ -49,12 +49,11 @@ app.UseRouting();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    //app.MapOpenApi();
+    //app.UseHttpsRedirection();
 }
 app.UseCors();
 app.UseSwagger();
 app.UseSwaggerUI();
-app.UseHttpsRedirection();
 
 app.UseAuthentication();
 app.UseAuthorization();

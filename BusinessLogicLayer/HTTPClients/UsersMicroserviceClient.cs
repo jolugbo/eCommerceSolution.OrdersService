@@ -24,7 +24,7 @@ public  class UsersMicroserviceClient
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException(
+             throw new HttpRequestException(
                 $"Users service request failed with {(int)response.StatusCode} {response.ReasonPhrase}. " +
                 $"Response body: {responseBody}",
                 null,

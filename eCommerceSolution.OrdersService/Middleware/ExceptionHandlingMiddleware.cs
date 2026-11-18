@@ -25,17 +25,21 @@ public class ExceptionHandlingMiddleware
         }
         catch (Exception ex)
         {
-            _logger.LogError($"Exception:{ex.GetType().ToString()} : {ex.Message}",
-                LogLevel.Error);
+            _logger.LogError($"Exception:{ex.GetType().ToString()} : {ex.Message}");
             if (ex.InnerException is not null)
             {
-                _logger.LogError($"Inner Exception:{ex.InnerException.GetType().ToString()} : {ex.InnerException.Message}",
-               LogLevel.Error);
+                _logger.LogError($"Inner Exception:{ex.InnerException.GetType().ToString()} : {ex.InnerException.Message}");
+            }
 
-                httpContext.Response.StatusCode = 500;
-                await httpContext.Response.WriteAsJsonAsync(
-                    new { Message = ex.Message, Type = ex.GetType().ToString() }
-                    );
+            if (!httpContext.Response.HasStarted)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status500InternalServerError;
+
+                await httpContext.Response.WriteAsJsonAsync(new
+                {
+                    Message = ex.Message,
+                    Type = ex.GetType().ToString()
+                });
             }
         }
     }

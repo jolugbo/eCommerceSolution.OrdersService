@@ -5,6 +5,7 @@ using eCommerce.OrdersService.API.Middleware;
 using eCommerce.OrdersService.BusinessLogicLayer;
 using eCommerce.OrdersService.DataAccessLayer;
 using FluentValidation.AspNetCore;
+using Polly;
 using System.Text.Json.Serialization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,7 +37,13 @@ var usersMicroservicePort = builder.Configuration["UsersMicroservicePort"];
 builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
 {
     client.BaseAddress = new Uri($"http://{usersMicroserviceName}:{usersMicroservicePort}");
-});
+}).AddPolicyHandler(
+    Policy.HandleResult<HttpResponseMessage>(response => !response.IsSuccessStatusCode)
+    .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), 
+    (outcome, timespan, retryAttempt, context) => { 
+    //add logs
+    })
+    );
 var productsMicroserviceName = builder.Configuration["ProductsMicroserviceName"];
 var productsMicroservicePort = builder.Configuration["ProductsMicroservicePort"];
 builder.Services.AddHttpClient<ProductsMicroserviceClient>(client => {

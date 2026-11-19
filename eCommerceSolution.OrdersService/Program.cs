@@ -3,6 +3,7 @@ using eCommerce.OrdersService.API.Middleware;
 //using eCommerce.OrdersService.API.APIEndPoints;
 using eCommerce.OrdersService.API.Middleware;
 using eCommerce.OrdersService.BusinessLogicLayer;
+using eCommerce.OrdersService.BusinessLogicLayer.Policies;
 using eCommerce.OrdersService.DataAccessLayer;
 using FluentValidation.AspNetCore;
 using Polly;
@@ -32,17 +33,14 @@ builder.Services.AddCors(options =>
         .AllowAnyHeader();
     });
 });
+builder.Services.AddTransient<IUsersMicroservicePolicies, UsersMicroservicePolicies>();
 var usersMicroserviceName = builder.Configuration["UsersMicroserviceName"];
 var usersMicroservicePort = builder.Configuration["UsersMicroservicePort"];
 builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
 {
     client.BaseAddress = new Uri($"http://{usersMicroserviceName}:{usersMicroservicePort}");
 }).AddPolicyHandler(
-    Policy.HandleResult<HttpResponseMessage>(response => !response.IsSuccessStatusCode)
-    .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)), 
-    (outcome, timespan, retryAttempt, context) => { 
-    //add logs
-    })
+   builder.Services.BuildServiceProvider().GetRequiredService<IUsersMicroservicePolicies>().GetRetryPolicy()
     );
 var productsMicroserviceName = builder.Configuration["ProductsMicroserviceName"];
 var productsMicroservicePort = builder.Configuration["ProductsMicroservicePort"];

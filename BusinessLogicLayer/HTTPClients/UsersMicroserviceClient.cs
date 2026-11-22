@@ -43,7 +43,7 @@ public  class UsersMicroserviceClient
                     Email: "Temporarily Unavailable",
                     Gender: "Temporarily Unavailable",
                     UserId: Guid.Empty
-                    ); a 
+                    ); 
             }   
             throw new HttpRequestException(
                 $"Users service request failed with {(int)response.StatusCode} {response.ReasonPhrase}. " +

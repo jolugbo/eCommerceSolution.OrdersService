@@ -16,7 +16,7 @@ public class UsersMicroservicePolicies : IUsersMicroservicePolicies
     .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
     (outcome, timespan, retryAttempt, context) =>
     {
-        _logger.LogWarning($"Retrying request...{retryAttempt} after {timespan.TotalSeconds} seconds");
+        _logger.LogInformation($"Retrying request...{retryAttempt} after {timespan.TotalSeconds} seconds");
     });
         return policy;
     }

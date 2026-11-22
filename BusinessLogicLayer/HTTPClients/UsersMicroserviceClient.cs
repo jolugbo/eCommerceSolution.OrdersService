@@ -24,7 +24,28 @@ public  class UsersMicroserviceClient
 
         if (!response.IsSuccessStatusCode)
         {
-             throw new HttpRequestException(
+            if (response.StatusCode == HttpStatusCode.NotFound)
+            {
+                return null;
+            }
+            else if (response.StatusCode == HttpStatusCode.BadRequest)
+            {
+                throw new HttpRequestException(
+                    $"Users service request failed with {(int)response.StatusCode} {response.ReasonPhrase}. " +
+                    $"Response body: {responseBody}",
+                    null,
+                    response.StatusCode);
+            }
+            else
+            {
+                return new UserDTO(
+                    PersonName: "Temporarily Unavailable",
+                    Email: "Temporarily Unavailable",
+                    Gender: "Temporarily Unavailable",
+                    UserId: Guid.Empty
+                    ); a 
+            }   
+            throw new HttpRequestException(
                 $"Users service request failed with {(int)response.StatusCode} {response.ReasonPhrase}. " +
                 $"Response body: {responseBody}",
                 null,

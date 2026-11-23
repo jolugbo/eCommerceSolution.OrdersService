@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.CircuitBreaker;
 using Polly.Retry;
 namespace eCommerce.OrdersService.BusinessLogicLayer.Policies;
 
@@ -13,12 +14,28 @@ public class UsersMicroservicePolicies : IUsersMicroservicePolicies
     }
     public IAsyncPolicy<HttpResponseMessage> GetRetryPolicy() { 
         AsyncRetryPolicy<HttpResponseMessage> policy =  Policy.HandleResult<HttpResponseMessage>(response => !response.IsSuccessStatusCode)
-    .WaitAndRetryAsync(3, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
+    .WaitAndRetryAsync(5, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)),
     (outcome, timespan, retryAttempt, context) =>
     {
         _logger.LogInformation($"Retrying request...{retryAttempt} after {timespan.TotalSeconds} seconds");
     });
         return policy;
     }
+
+    public IAsyncPolicy<HttpResponseMessage> GetCircuitBreakerPolicy()
+    {
+        AsyncCircuitBreakerPolicy<HttpResponseMessage> policy = Policy.HandleResult<HttpResponseMessage>(response => !response.IsSuccessStatusCode)
+     .CircuitBreakerAsync(
+            3,durationOfBreak:  TimeSpan.FromMinutes(2),
+     onBreak:(outcome, timespan) =>
+     {
+         _logger.LogInformation($"Circuit breaker opened for {timespan.TotalMinutes} minutes. due to consecutive 3 failures. the subsequent requests will be blocked");
+     },onReset: () =>
+     {
+         _logger.LogInformation("Circuit breaker reset. allowing requests to pass through.");
+     });
+        return policy;
+    }
+
 
 }

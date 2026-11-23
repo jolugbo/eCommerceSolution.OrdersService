@@ -40,7 +40,13 @@ builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
 {
     client.BaseAddress = new Uri($"http://{usersMicroserviceName}:{usersMicroservicePort}");
 }).AddPolicyHandler(
-   builder.Services.BuildServiceProvider().GetRequiredService<IUsersMicroservicePolicies>().GetRetryPolicy()
+   builder.Services.BuildServiceProvider()
+   .GetRequiredService<IUsersMicroservicePolicies>()
+   .GetRetryPolicy())
+   .AddPolicyHandler(
+   builder.Services.BuildServiceProvider()
+   .GetRequiredService<IUsersMicroservicePolicies>()
+   .GetCircuitBreakerPolicy()
     );
 var productsMicroserviceName = builder.Configuration["ProductsMicroserviceName"];
 var productsMicroservicePort = builder.Configuration["ProductsMicroservicePort"];

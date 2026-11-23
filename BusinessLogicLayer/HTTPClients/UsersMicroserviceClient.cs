@@ -1,4 +1,7 @@
 ﻿using BusinessLogicLayer.OrdersService.BusinessLogicLayer.DTO;
+using DnsClient.Internal;
+using Microsoft.Extensions.Logging;
+using Polly.CircuitBreaker;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -9,13 +12,17 @@ namespace BusinessLogicLayer.OrdersService.BusinessLogicLayer.HTTPClients;
 public  class UsersMicroserviceClient
 {
     private readonly HttpClient _httpClient;
-    public UsersMicroserviceClient(HttpClient httpClient)
+    private readonly ILogger<UsersMicroserviceClient> _logger;
+    public UsersMicroserviceClient(HttpClient httpClient, ILogger<UsersMicroserviceClient> logger)
     {
         _httpClient = httpClient;
+        _logger = logger;
     }
     public async Task<UserDTO?> GetUserById(Guid userId)
     {
-        if(userId == Guid.Empty)
+        try
+        {
+            if (userId == Guid.Empty)
         {
             throw new ArgumentException("User ID cannot be empty.", nameof(userId));
         }
@@ -59,8 +66,6 @@ public  class UsersMicroserviceClient
                 $"Expected a UserDTO for user {userId}. Content-Type: {response.Content.Headers.ContentType}");
         }
 
-        try
-        {
             UserDTO? user = JsonSerializer.Deserialize<UserDTO>(
                 responseBody,
                 new JsonSerializerOptions(JsonSerializerDefaults.Web));
@@ -68,12 +73,15 @@ public  class UsersMicroserviceClient
             return user ?? throw new HttpRequestException(
                 $"Users service returned JSON null for user {userId}.");
         }
-        catch (JsonException exception)
+        catch (BrokenCircuitException exception)
         {
-            throw new HttpRequestException(
-                $"Users service returned invalid JSON for user {userId}. " +
-                $"Content-Type: {response.Content.Headers.ContentType}. Response body: {responseBody}",
-                exception);
+            _logger.LogError($"{exception}, Request Failed because Circuit breaker is in open state, returning dummy data.");
+            return new UserDTO(
+                      PersonName: "Temporarily Unavailable",
+                      Email: "Temporarily Unavailable",
+                      Gender: "Temporarily Unavailable",
+                      UserId: Guid.Empty
+                      );
         }
     }
 }

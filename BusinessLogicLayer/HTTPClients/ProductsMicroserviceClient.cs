@@ -32,13 +32,6 @@ public  class ProductsMicroserviceClient
                 response.StatusCode);
         }
 
-        if (string.IsNullOrWhiteSpace(responseBody))
-        {
-            throw new HttpRequestException(
-                $"Products service returned {(int)response.StatusCode} {response.ReasonPhrase} with an empty response body. " +
-                $"Expected a ProductDTO for product {productID}. Content-Type: {response.Content.Headers.ContentType}");
-        }
-
         try
         {
             ProductDTO? product = JsonSerializer.Deserialize<ProductDTO>(

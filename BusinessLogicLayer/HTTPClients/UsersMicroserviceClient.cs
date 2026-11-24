@@ -5,6 +5,7 @@ using Polly.CircuitBreaker;
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace BusinessLogicLayer.OrdersService.BusinessLogicLayer.HTTPClients;
@@ -22,56 +23,40 @@ public  class UsersMicroserviceClient
     {
         try
         {
-            if (userId == Guid.Empty)
-        {
-            throw new ArgumentException("User ID cannot be empty.", nameof(userId));
-        }
-        using HttpResponseMessage response = await _httpClient.GetAsync($"api/users/{userId}");
-        string responseBody = await response.Content.ReadAsStringAsync();
+            HttpResponseMessage response = await _httpClient.GetAsync($"/api/users/{userId}");
 
-        if (!response.IsSuccessStatusCode)
-        {
-            if (response.StatusCode == HttpStatusCode.NotFound)
+            if (!response.IsSuccessStatusCode)
             {
-                return null;
+                if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
+                {
+                    return null;
+                }
+                else if (response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+                {
+                    throw new HttpRequestException("Bad request", null, System.Net.HttpStatusCode.BadRequest);
+                }
+                else
+                {
+                    //throw new HttpRequestException($"Http request failed with status code {response.StatusCode}");
+
+                    return new UserDTO(
+                      PersonName: "Temporarily Unavailable",
+                      Email: "Temporarily Unavailable",
+                      Gender: "Temporarily Unavailable",
+                      UserId: Guid.Empty);
+                }
             }
-            else if (response.StatusCode == HttpStatusCode.BadRequest)
+
+
+            UserDTO? user = await response.Content.ReadFromJsonAsync<UserDTO>();
+
+            if (user == null)
             {
-                throw new HttpRequestException(
-                    $"Users service request failed with {(int)response.StatusCode} {response.ReasonPhrase}. " +
-                    $"Response body: {responseBody}",
-                    null,
-                    response.StatusCode);
+                throw new ArgumentException("Invalid User ID");
             }
-            else
-            {
-                return new UserDTO(
-                    PersonName: "Temporarily Unavailable",
-                    Email: "Temporarily Unavailable",
-                    Gender: "Temporarily Unavailable",
-                    UserId: Guid.Empty
-                    ); 
-            }   
-            throw new HttpRequestException(
-                $"Users service request failed with {(int)response.StatusCode} {response.ReasonPhrase}. " +
-                $"Response body: {responseBody}",
-                null,
-                response.StatusCode);
-        }
 
-        if (string.IsNullOrWhiteSpace(responseBody))
-        {
-            throw new HttpRequestException(
-                $"Users service returned {(int)response.StatusCode} {response.ReasonPhrase} with an empty response body. " +
-                $"Expected a UserDTO for user {userId}. Content-Type: {response.Content.Headers.ContentType}");
-        }
-
-            UserDTO? user = JsonSerializer.Deserialize<UserDTO>(
-                responseBody,
-                new JsonSerializerOptions(JsonSerializerDefaults.Web));
-
-            return user ?? throw new HttpRequestException(
-                $"Users service returned JSON null for user {userId}.");
+            return user;
+        
         }
         catch (BrokenCircuitException exception)
         {

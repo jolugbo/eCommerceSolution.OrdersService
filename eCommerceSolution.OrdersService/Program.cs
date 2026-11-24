@@ -34,6 +34,7 @@ builder.Services.AddCors(options =>
     });
 });
 builder.Services.AddTransient<IUsersMicroservicePolicies, UsersMicroservicePolicies>();
+builder.Services.AddTransient<IProductsMicroservicePolicies, ProductsMicroservicePolicies>();
 var usersMicroserviceName = builder.Configuration["UsersMicroserviceName"];
 var usersMicroservicePort = builder.Configuration["UsersMicroservicePort"];
 builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
@@ -52,7 +53,10 @@ var productsMicroserviceName = builder.Configuration["ProductsMicroserviceName"]
 var productsMicroservicePort = builder.Configuration["ProductsMicroservicePort"];
 builder.Services.AddHttpClient<ProductsMicroserviceClient>(client => {
     client.BaseAddress = new Uri($"http://{productsMicroserviceName}:{productsMicroservicePort}");
-});
+}).AddPolicyHandler(
+   builder.Services.BuildServiceProvider()
+   .GetRequiredService<IProductsMicroservicePolicies>()
+   .GetFallbackPolicy());
 var app = builder.Build();
 
 app.UseExceptionHandlingMiddleware();

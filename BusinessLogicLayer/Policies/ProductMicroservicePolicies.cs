@@ -1,6 +1,7 @@
 ﻿using BusinessLogicLayer.DTO;
 using Microsoft.Extensions.Logging;
 using Polly;
+using Polly.Bulkhead;
 using Polly.CircuitBreaker;
 using Polly.Fallback;
 using Polly.Retry;
@@ -16,7 +17,20 @@ public class ProductsMicroservicePolicies : IProductsMicroservicePolicies
         _logger = logger;
 
     }
-    
+
+    public IAsyncPolicy<HttpResponseMessage> GetBulkHeadIsolationPolicy()
+    {
+        AsyncBulkheadPolicy<HttpResponseMessage> policy = Policy.BulkheadAsync<HttpResponseMessage>(
+            maxParallelization:2,//allows 2 concurrent request
+            maxQueuingActions:40,//Queue up to 40 additional requests
+            onBulkheadRejectedAsync: (context) => {
+                _logger.LogWarning("BulkheadIsolation triggered. can't send any more requests since the queue is full");
+                throw new BulkheadRejectedException("Bulhead queue is full");
+            }
+            );
+        return policy;
+    }
+
     public IAsyncPolicy<HttpResponseMessage> GetFallbackPolicy()
     {
         AsyncFallbackPolicy<HttpResponseMessage> policy =  

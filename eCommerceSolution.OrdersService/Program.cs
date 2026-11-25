@@ -35,6 +35,7 @@ builder.Services.AddCors(options =>
 });
 builder.Services.AddTransient<IUsersMicroservicePolicies, UsersMicroservicePolicies>();
 builder.Services.AddTransient<IProductsMicroservicePolicies, ProductsMicroservicePolicies>();
+builder.Services.AddTransient<IPollyPolicies, PollyPolicies>();
 var usersMicroserviceName = builder.Configuration["UsersMicroserviceName"];
 var usersMicroservicePort = builder.Configuration["UsersMicroservicePort"];
 builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
@@ -43,19 +44,7 @@ builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
 }).AddPolicyHandler(
    builder.Services.BuildServiceProvider()
    .GetRequiredService<IUsersMicroservicePolicies>()
-   .GetRetryPolicy())
-
-   .AddPolicyHandler(
-   builder.Services.BuildServiceProvider()
-   .GetRequiredService<IUsersMicroservicePolicies>()
-   .GetCircuitBreakerPolicy()
-    )
-
-   .AddPolicyHandler(
-   builder.Services.BuildServiceProvider()
-   .GetRequiredService<IUsersMicroservicePolicies>()
-   .GetTimeOutPolicy()
-    );
+   .GetCombinedPolicy());
 var productsMicroserviceName = builder.Configuration["ProductsMicroserviceName"];
 var productsMicroservicePort = builder.Configuration["ProductsMicroservicePort"];
 builder.Services.AddHttpClient<ProductsMicroserviceClient>(client => {
@@ -63,7 +52,11 @@ builder.Services.AddHttpClient<ProductsMicroserviceClient>(client => {
 }).AddPolicyHandler(
    builder.Services.BuildServiceProvider()
    .GetRequiredService<IProductsMicroservicePolicies>()
-   .GetFallbackPolicy());
+   .GetFallbackPolicy())
+.AddPolicyHandler(
+   builder.Services.BuildServiceProvider()
+   .GetRequiredService<IProductsMicroservicePolicies>()
+   .GetBulkHeadIsolationPolicy());
 var app = builder.Build();
 
 app.UseExceptionHandlingMiddleware();

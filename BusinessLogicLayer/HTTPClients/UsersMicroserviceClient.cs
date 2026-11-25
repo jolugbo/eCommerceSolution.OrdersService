@@ -2,6 +2,7 @@
 using DnsClient.Internal;
 using Microsoft.Extensions.Logging;
 using Polly.CircuitBreaker;
+using Polly.Timeout;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -56,15 +57,25 @@ public  class UsersMicroserviceClient
             }
 
             return user;
-        
+
         }
         catch (BrokenCircuitException exception)
         {
             _logger.LogError($"{exception}, Request Failed because Circuit breaker is in open state, returning dummy data.");
             return new UserDTO(
-                      PersonName: "Temporarily Unavailable",
-                      Email: "Temporarily Unavailable",
-                      Gender: "Temporarily Unavailable",
+                      PersonName: "Temporarily Unavailable (circuit breaker)",
+                      Email: "Temporarily Unavailable (circuit breaker)",
+                      Gender: "Temporarily Unavailable (circuit breaker)",
+                      UserId: Guid.Empty
+                      );
+        }
+        catch (TimeoutRejectedException exception)
+        {
+            _logger.LogError($"{exception}, Request Failed because Timeout has occured, returning dummy data.");
+            return new UserDTO(
+                      PersonName: "Temporarily Unavailable (timeout)",
+                      Email: "Temporarily Unavailable (timeout)",
+                      Gender: "Temporarily Unavailable (timeout)",
                       UserId: Guid.Empty
                       );
         }

@@ -44,10 +44,17 @@ builder.Services.AddHttpClient<UsersMicroserviceClient>(client =>
    builder.Services.BuildServiceProvider()
    .GetRequiredService<IUsersMicroservicePolicies>()
    .GetRetryPolicy())
+
    .AddPolicyHandler(
    builder.Services.BuildServiceProvider()
    .GetRequiredService<IUsersMicroservicePolicies>()
    .GetCircuitBreakerPolicy()
+    )
+
+   .AddPolicyHandler(
+   builder.Services.BuildServiceProvider()
+   .GetRequiredService<IUsersMicroservicePolicies>()
+   .GetTimeOutPolicy()
     );
 var productsMicroserviceName = builder.Configuration["ProductsMicroserviceName"];
 var productsMicroservicePort = builder.Configuration["ProductsMicroservicePort"];

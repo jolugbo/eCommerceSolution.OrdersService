@@ -19,6 +19,10 @@ public static class DependencyInjection
         services.AddAutoMapper(configuration =>
             configuration.AddMaps(typeof(OrderAddRequestToOrderMappingProfile).Assembly));
         services.AddScoped<IOrdersService, OrderService>();
+        services.AddStackExchangeRedisCache(options => { 
+            options.Configuration = $"{configuration["REDIS_HOST"]}:{configuration["REDIS_PORT"]}";
+        
+        });
         return services;
     }
 }
